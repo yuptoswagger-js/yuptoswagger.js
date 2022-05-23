@@ -17,6 +17,7 @@
     "release": "rollout",
     "build:dts": "yarn tsc --emitDeclarationOnly -p . --outDir dts",
     "build": "rm -rf dts && yarn build:dts && yarn rollup -c rollup.config.js  && yarn toc",
+    "build:win": "del /q dts && yarn build:dts && yarn rollup -c rollup.config.js  && yarn toc",
     "prepublishOnly": "yarn build"
   },
   "repository": {

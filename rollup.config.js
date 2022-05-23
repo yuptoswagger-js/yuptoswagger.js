@@ -5,6 +5,7 @@ import filesize from 'rollup-plugin-filesize';
 
 const base = {
   input: './src/index.ts',
+  "presets": ["@babel/preset-typescript"],
   plugins: [
     nodeResolve({ extensions: ['.js', '.ts'] }),
     babel({
