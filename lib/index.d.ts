@@ -1,3 +1,12 @@
-declare function hello(): void;
+import { AnySchema } from 'yup/lib/schema';
 
-export { hello };
+declare type YTSCompilerOptions = {
+    debug: boolean;
+};
+declare class YTSCompiler {
+    protected debug: boolean;
+    constructor(options?: YTSCompilerOptions);
+    compile(schema: AnySchema): any;
+}
+
+export { YTSCompiler as default };
