@@ -9,16 +9,21 @@ https://datatracker.ietf.org/doc/html/draft-wright-json-schema-validation-00#sec
 const yup = require("yup");
 const YTSCompiler = require("../lib");
 
-const compiler = new YTSCompiler();
+const compiler = new YTSCompiler({ debug: true });
 
-let schema = yup.number().oneOf(["a", "B", 2])
+const schema = yup.object().shape({
+  first_name: yup.string().min(2).required(),
+  last_name: yup.string().min(2).required(),
+  email: yup.string().email().required(),
+  password: yup.string().min(2).required(),
+})
 
 let value = compiler.compile(schema);
 console.log(
     value,
-    schema.isValidSync(yup.object().shape({ ok: yup.string() })),
-    schema.isValidSync("OK"),
-    schema.isValidSync(2),
-    schema.isValidSync({ not_ok: 1 }),
-    schema.isValidSync({ ok: "ok" }),
-);  
+    // schema.isValidSync(yup.object().shape({ ok: yup.string() })),
+    // schema.isValidSync("OK"),
+    // schema.isValidSync(2),
+    // schema.isValidSync({ not_ok: 1 }),
+    // schema.isValidSync({ ok: "ok" }),
+);
