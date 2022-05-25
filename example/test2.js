@@ -11,5 +11,14 @@ const YTSCompiler = require("../lib");
 
 const compiler = new YTSCompiler();
 
-let value = compiler.compile(yup.string().min(2));
-console.log(value);
+let schema = yup.number().oneOf(["a", "B", 2])
+
+let value = compiler.compile(schema);
+console.log(
+    value,
+    schema.isValidSync(yup.object().shape({ ok: yup.string() })),
+    schema.isValidSync("OK"),
+    schema.isValidSync(2),
+    schema.isValidSync({ not_ok: 1 }),
+    schema.isValidSync({ ok: "ok" }),
+);  
