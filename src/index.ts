@@ -93,11 +93,17 @@ class YTSCompiler {
         return { type };
     }
     parse_number_schema(type: 'number', properties: any) {
+      const { oneOf } = properties;
+      const schema = { type } ;
+
+      if( oneOf && oneOf.length ) mergeObjects(schema, { enum: oneOf });
+
       const integer_test_found: boolean = properties.tests.some(
         (test: any) => test.name === "integer"
       )
-      if (integer_test_found) return { type: "integer" }
-      return { type }
+      if (integer_test_found) mergeObjects(schema, { type: "integer" });
+
+      return schema
     }
     parse_object_schema(type: string, properties: any) {
       const schema = { type }
@@ -130,7 +136,7 @@ class YTSCompiler {
 
       const parse_oneOf: boolean = properties.oneOf && properties.oneOf.length > 0;
       if (parse_oneOf) {
-        const oneOf = this.parse_oneOf_field(properties.oneOf as any[]);
+        const oneOf = this.parse_fields(properties.oneOf as any[]);
         mergeObjects(schema.items, { oneOf });
       }
       
@@ -145,7 +151,7 @@ class YTSCompiler {
       
       return parsed;
     }
-    parse_oneOf_field(fields: any[]) {
+    parse_fields(fields: any[]) {
       const parsed_fields: any[] = [];
       for (let field of fields){
         const parsed = this.compile(field);
@@ -154,7 +160,8 @@ class YTSCompiler {
       return parsed_fields
     }
     isYupSchema<T extends AnySchema>(object: T): T | false {
-      return object.__isYupSchema__ ? object : false;
+      if (typeof object !== 'object') return false;
+      return (object as AnySchema).__isYupSchema__ ? object : false;
     }
     compile(schema: AnySchema | SchemaDescription): any;
     compile(schema: AnySchema | SchemaDescription & { spec?: any }) {
@@ -166,6 +173,7 @@ class YTSCompiler {
       this.log(schema_description,'schema_description', this.debug);
 
       const { type, ...properties } = schema_description;
+      
 
       let swagger_schema: any = {}
       switch (type) {
@@ -186,6 +194,25 @@ class YTSCompiler {
       if (parse_spec) {
         const spec_properties = this.parse_spec_field(properties!.spec);
         mergeObjects(swagger_schema, spec_properties);
+      }
+
+      const parse_oneOf: boolean = properties.hasOwnProperty("oneOf");
+      if (parse_oneOf) {
+        const oneOf = this.parse_fields((properties as Exclude<SchemaDescription, "type">).oneOf as any[]);
+        mergeObjects(swagger_schema.items, { oneOf });
+      }
+      const parse_not: boolean = properties.hasOwnProperty("notOneOf") && (properties as any).notOneOf.length > 0;
+      if (parse_not) {
+        const { notOneOf } = (properties as Exclude<SchemaDescription, "type">)
+        const value = notOneOf[0] as any;
+        if (this.isYupSchema<AnySchema>(value)) {
+          const not = this.compile(value);
+          mergeObjects(swagger_schema, { not });
+  
+        } else {
+          mergeObjects(swagger_schema, { not: value });
+        }
+        if (notOneOf.length > 1) this.warn("[WARN] only the first item of the not function is parsed")
       }
 
       return mergeObjects(swagger_schema, from_test_properties);

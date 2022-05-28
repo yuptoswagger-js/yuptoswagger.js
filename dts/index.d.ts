@@ -4,7 +4,7 @@ declare type YTSCompilerOptions = {
     warnings?: boolean;
 };
 declare class YTSCompiler {
-    protected defaultOptions: any;
+    protected defaultOptions: YTSCompilerOptions;
     protected debug: boolean;
     protected warnings: boolean;
     constructor(options_: YTSCompilerOptions);
@@ -20,7 +20,7 @@ declare class YTSCompiler {
         enum?: undefined;
     };
     parse_number_schema(type: 'number', properties: any): {
-        type: string;
+        type: "number";
     };
     parse_object_schema(type: string, properties: any): {
         properties: any;
@@ -32,7 +32,7 @@ declare class YTSCompiler {
         items: {};
     };
     parse_spec_field(spec: any): any;
-    parse_oneOf_field(fields: any[]): any[];
+    parse_fields(fields: any[]): any[];
     isYupSchema<T extends AnySchema>(object: T): T | false;
     compile(schema: AnySchema | SchemaDescription): any;
 }
