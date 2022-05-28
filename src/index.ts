@@ -67,10 +67,8 @@ class YTSCompiler {
         const enum_ = oneOf;
 
         const schema: any = { type, enum: enum_ }
-        const from_test_properties = this.parse_tests(type, tests);
-      
-        console.log({ from_test_properties })
-        return mergeObjects({}, schema, from_test_properties);
+
+        return schema;
     }
     parse_object_schema(type: string, properties: any) {
       const schema = { type }
@@ -81,6 +79,12 @@ class YTSCompiler {
         fields.push(parsed);
       }
       return { ...schema, fields }
+    }
+    parse_array_schema(type: string, properties: any) {
+      const schema = { type }
+      const innerType: any = properties.innerType;
+      const items = this.compile(innerType)
+      return { ...schema, items }
     }
     parse_spec_field(spec: any) {
       const parsed: any = { }
@@ -109,10 +113,13 @@ class YTSCompiler {
       switch (type) {
           case "string": swagger_schema = this.parse_string_schema(type, properties); break;
           case "object": swagger_schema = this.parse_object_schema(type, properties); break;
+          case "array": swagger_schema = this.parse_array_schema(type, properties); break;
           default: return { failed: true };
       }
+      const from_test_properties = this.parse_tests(type, properties.tests);
       const spec_properties = this.parse_spec_field(properties!.spec);
-      return { ...swagger_schema, ...spec_properties }
+      
+      return mergeObjects({}, swagger_schema, from_test_properties, spec_properties);
     }
 }
 

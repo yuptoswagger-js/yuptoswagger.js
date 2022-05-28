@@ -12,6 +12,10 @@ declare class YTSCompiler {
         fields: any[];
         type: string;
     };
+    parse_array_schema(type: string, properties: any): {
+        items: any;
+        type: string;
+    };
     parse_spec_field(spec: any): any;
     isYupSchema<T extends AnySchema>(object: T): T | false;
     compile(schema: AnySchema | SchemaDescription): any;
