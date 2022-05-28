@@ -40,7 +40,7 @@ module.exports = [
         file: 'lib/index.umd.js',
         format: 'umd',
         sourcemap: true,
-        name: 'RevolutionScreenPlayer'
+        name: 'yuptoswagger'
       },
     ],
     plugins: [...base.plugins, filesize()],

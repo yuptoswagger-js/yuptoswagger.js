@@ -1,7 +1,7 @@
 {
-  "name": "revolutionSCREENTizenPlayer",
+  "name": "yuptoswagger.js",
   "version": "0.0.1",
-  "description": "The tizen player of revolutionSCREEN platform.",
+  "description": "Conversion library for transforming Yup schema objects into Swagger OAS 3.0 schema definitions.",
   "main": "lib/index.js",
   "module": "lib/index.esm.js",
   "runkitExampleFilename": "./runkit-example.js",
@@ -22,16 +22,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/revolutionscreenag/revolutionSCREENTizenPlayer.git"
+    "url": "git+https://github.com/yuptoswagger-js/yuptoswagger.js.git"
   },
   "author": {
-    "name": "@monasticpanic Jason Quense"
+    "name": "@gjergjk71 Gjergj Kadriu"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/revolutionscreenag/revolutionSCREENTizenPlayer/issues"
+    "url": "https://github.com/yuptoswagger-js/yuptoswagger.js/issues"
   },
-  "homepage": "https://github.com/revolutionscreenag/revolutionSCREENTizenPlayer",
+  "homepage": "https://github.com/yuptoswagger-js/yuptoswagger.js",
   "release": {
     "conventionalCommits": true,
     "publishDir": "lib"
