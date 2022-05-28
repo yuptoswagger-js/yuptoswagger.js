@@ -6,14 +6,23 @@ declare class YTSCompiler {
     protected debug: boolean;
     constructor(options?: YTSCompilerOptions);
     parse_tests(type: string, tests: any[]): any;
-    parse_string_schema(type: string, properties: any): any;
+    parse_string_schema(type: string, properties: any): {
+        type: string;
+        enum: any;
+    } | {
+        type: string;
+        enum?: undefined;
+    };
+    parse_number_schema(type: 'number', properties: any): {
+        type: string;
+    };
     parse_object_schema(type: string, properties: any): {
         fields: any[];
         type: string;
     };
     parse_array_schema(type: string, properties: any): {
-        items: any;
         type: string;
+        items: {};
     };
     parse_spec_field(spec: any): any;
     parse_oneOf_field(fields: any[]): any[];

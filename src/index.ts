@@ -37,10 +37,14 @@ class YTSCompiler {
               "matches": [ "pattern", "regex" ],
               // required: todo
           },
+          "number": {
+            "min": "minimum",
+            "max": "maximum"
+          },
           "array": {
             "min": "minItems",
             "max": "maxItems"
-          }
+          },
         }
 
         let properties: any = {};
@@ -67,13 +71,18 @@ class YTSCompiler {
         return properties
     }
     parse_string_schema(type: string, properties: any) {
-        const { oneOf, tests } = properties;
+        const { oneOf } = properties;
         
-        const enum_ = oneOf;
+        if( oneOf && oneOf.length ) return { type, enum: oneOf };
 
-        const schema: any = { type, enum: enum_ }
-
-        return schema;
+        return { type };
+    }
+    parse_number_schema(type: 'number', properties: any) {
+      const integer_test_found: boolean = Boolean(
+        properties.tests.find((test: any) => test.name === "integer")
+      )
+      if (integer_test_found) return { type: "integer" }
+      return { type }
     }
     parse_object_schema(type: string, properties: any) {
       const schema = { type }
@@ -86,10 +95,22 @@ class YTSCompiler {
       return { ...schema, fields }
     }
     parse_array_schema(type: string, properties: any) {
-      const schema = { type }
-      const innerType: any = properties.innerType;
-      const items = this.compile(innerType)
-      return { ...schema, items }
+      const schema = { type, items: {} }
+
+      const parse_innerType: boolean = Boolean(properties.innerType)
+      if (parse_innerType) {
+        const innerType: any = properties.innerType;
+        const items = this.compile(innerType)
+        mergeObjects(schema, { items })
+      }
+
+      const parse_oneOf: boolean = properties.oneOf && properties.oneOf.length > 0;
+      if (parse_oneOf) {
+        const oneOf = this.parse_oneOf_field(properties.oneOf as any[]);
+        mergeObjects(schema.items, { oneOf });
+      }
+      
+      return schema
     }
     parse_spec_field(spec: any) {
       const parsed: any = { }
@@ -127,19 +148,15 @@ class YTSCompiler {
           // todo: ref case
           // todo: oneOf case
           // todo: allow users to add manually properties that are not mapped with yup (eg. uniqueItems)
+          // todo: find workaround for non-usual usage of yup ( eg. yup.array().oneOf(...).of(...) )
           case "string": swagger_schema = this.parse_string_schema(type, properties); break;
+          case "number": swagger_schema = this.parse_number_schema(type, properties); break;
           case "object": swagger_schema = this.parse_object_schema(type, properties); break;
           case "array": swagger_schema = this.parse_array_schema(type, properties); break;
           default: return { failed: true };
       }
       const from_test_properties = this.parse_tests(type, properties.tests);
       const spec_properties = this.parse_spec_field(properties!.spec);
-      
-      if (schema_description.oneOf) {
-        const oneOf = this.parse_oneOf_field(schema_description.oneOf as any[]);
-        console.log("OKOK", oneOf)
-        mergeObjects(swagger_schema, { oneOf });
-      }
 
       return mergeObjects({}, swagger_schema, from_test_properties, spec_properties);
     }
