@@ -100,5 +100,8 @@
     "synchronous-promise": "^2.0.15",
     "typescript": "^4.6.4",
     "yup": "^0.32.11"
+  },
+  "dependencies": {
+    "property-expr": "^2.0.5"
   }
 }

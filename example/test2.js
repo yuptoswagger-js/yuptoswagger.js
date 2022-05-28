@@ -16,11 +16,18 @@ const schema = yup.object().shape({
   last_name: yup.string().min(2).required(),
   email: yup.string().email().required(),
   password: yup.string().min(2).required(),
+  posts: yup.array().of(yup.object().shape({
+    id: yup.number().integer().positive(),
+    title: yup.string().required(),
+    description: yup.string().required()
+  })).required()
 })
 
 // let value = compiler.compile(schema);
 let value = compiler.compile(
-  yup.number().integer().min(2).max(5)
+  // yup.number().integer().min(2).max(5)
+  // schema
+  yup.number().integer().positive()
 )
 console.log(
     value,

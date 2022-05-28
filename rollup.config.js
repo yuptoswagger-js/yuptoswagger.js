@@ -14,7 +14,7 @@ const base = {
       extensions: ['.js', '.ts'],
     }),
   ],
-  external: [],
+  external: [ 'property-expr' ],
 };
 
 module.exports = [

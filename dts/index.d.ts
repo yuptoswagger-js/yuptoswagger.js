@@ -17,7 +17,8 @@ declare class YTSCompiler {
         type: string;
     };
     parse_object_schema(type: string, properties: any): {
-        fields: any[];
+        properties: any;
+        required: string[];
         type: string;
     };
     parse_array_schema(type: string, properties: any): {
