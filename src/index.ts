@@ -38,8 +38,8 @@ class YTSCompiler {
               // required: todo
           },
           "number": {
-            "min": "minimum",
-            "max": "maximum"
+            "min": [ "minimum", "min", "more" ],
+            "max": [ "maximum", "max", "less" ],
           },
           "array": {
             "min": "minItems",
@@ -48,13 +48,21 @@ class YTSCompiler {
         }
 
         let properties: any = {};
-        console.log({ type })
         const type_map = map[type];
         for (let test of tests){
-              const { name, params } = test;
+            const { name, params } = test;
             const match = type_map[name]
             if (!match) {
               console.warn(`[WARN] yuptoswagger.js: ignoring ${name}`)
+              continue
+            }
+            if (isArray(match) && match.length > 2) {
+              const [ key, ...value_keys ] = match;
+              const value_key = value_keys.find(
+                (key: string) => params[key] !== undefined ? true : false 
+              )
+              const value = params[value_key]
+              properties[key] = value
               continue
             }
             if (isArray(match) && match.length == 2) {
@@ -66,7 +74,6 @@ class YTSCompiler {
             }
             const value = params[name] || name
             properties[match] = value;
-            console.log({ [match]: value })
         }
         return properties
     }
@@ -78,21 +85,30 @@ class YTSCompiler {
         return { type };
     }
     parse_number_schema(type: 'number', properties: any) {
-      const integer_test_found: boolean = Boolean(
-        properties.tests.find((test: any) => test.name === "integer")
+      const integer_test_found: boolean = properties.tests.some(
+        (test: any) => test.name === "integer"
       )
       if (integer_test_found) return { type: "integer" }
       return { type }
     }
     parse_object_schema(type: string, properties: any) {
       const schema = { type }
-      const fields = []
+      const obj_properties: any = {};
+      const required: string[] = [];
       for (const field_key of Object.keys(properties.fields)) {
         const field: SchemaDescription = properties.fields[field_key];
+        const field_required_test_found: Boolean = field.tests.some(
+          (test: any) => test.name === "required"
+        )
+        if (field_required_test_found) required.push(field_key)
         const parsed = this.compile(field)
-        fields.push(parsed);
+        obj_properties[field_key] = parsed;
       }
-      return { ...schema, fields }
+      return { 
+        ...schema, 
+        properties: obj_properties, 
+        required 
+      }
     }
     parse_array_schema(type: string, properties: any) {
       const schema = { type, items: {} }
@@ -156,9 +172,14 @@ class YTSCompiler {
           default: return { failed: true };
       }
       const from_test_properties = this.parse_tests(type, properties.tests);
-      const spec_properties = this.parse_spec_field(properties!.spec);
 
-      return mergeObjects({}, swagger_schema, from_test_properties, spec_properties);
+      const parse_spec: boolean = properties.hasOwnProperty("spec");
+      if (parse_spec) {
+        const spec_properties = this.parse_spec_field(properties!.spec);
+        mergeObjects(swagger_schema, spec_properties);
+      }
+
+      return mergeObjects(swagger_schema, from_test_properties);
     }
 }
 
