@@ -1,9 +1,9 @@
 
-const isObject = (item: any) => {
+export const isObject = (item: any) => {
   return (item && typeof item === 'object' && !Array.isArray(item))
 }
 
-const isArray = (item: any) => {
+export const isArray = (item: any) => {
   return (item && typeof item === 'object' && Array.isArray(item))
 }
 

@@ -18,7 +18,8 @@ const schema = yup.object().shape({
   password: yup.string().min(2).required(),
 })
 
-let value = compiler.compile(schema);
+// let value = compiler.compile(schema);
+let value = compiler.compile(yup.string().nullable().required().defined());
 console.log(
     value,
     // schema.isValidSync(yup.object().shape({ ok: yup.string() })),

@@ -1,5 +1,6 @@
 import * as yup from 'yup';
 import { AnySchema, SchemaDescription } from "yup/lib/schema";
+import { isArray, mergeObjects } from "./utils";
 
 const __yuptoswagger__: any = { debug: false }
 
@@ -41,8 +42,7 @@ class YTSCompiler {
         let properties: any = {};
         const type_map = map[type];
         for (let test of tests){
-            console.log("TEST: ", test)
-            const { name, params } = test;
+              const { name, params } = test;
             const match = type_map[name]
             if (!match) {
               console.warn(`[WARN] yuptoswagger.js: ignoring ${name}`)
@@ -82,11 +82,20 @@ class YTSCompiler {
       }
       return { ...schema, fields }
     }
+    parse_spec_field(spec: any) {
+      const parsed: any = { }
+      
+      const { nullable } = spec;
+
+      if (nullable) parsed.nullable = nullable;
+      
+      return parsed;
+    }
     isYupSchema<T extends AnySchema>(object: T): T | false {
       return object.__isYupSchema__ ? object : false;
     }
     compile(schema: AnySchema | SchemaDescription): any;
-    compile(schema: AnySchema | SchemaDescription) {
+    compile(schema: AnySchema | SchemaDescription & { spec?: any }) {
       let schema_description = schema;
       
       const yupSchema = this.isYupSchema(schema as AnySchema)
@@ -96,42 +105,15 @@ class YTSCompiler {
 
       const { type, ...properties } = schema_description;
 
+      let swagger_schema: any = {}
       switch (type) {
-          case "string": return this.parse_string_schema(type, properties)
-          case "object": return this.parse_object_schema(type, properties)
+          case "string": swagger_schema = this.parse_string_schema(type, properties); break;
+          case "object": swagger_schema = this.parse_object_schema(type, properties); break;
+          default: return { failed: true };
       }
-      return { failed: true }
+      const spec_properties = this.parse_spec_field(properties!.spec);
+      return { ...swagger_schema, ...spec_properties }
     }
 }
 
 export default YTSCompiler;
-
-const isObject = (item: any) => {
-  return (item && typeof item === 'object' && !Array.isArray(item))
-}
-
-const isArray = (item: any) => {
-  return (item && typeof item === 'object' && Array.isArray(item))
-}
-
-const mergeObjects: any = (target: any, ...sources: any) => {
-    if (!sources.length) return target;
-    const source = sources.shift();
-  
-    if (isObject(target) && isObject(source)) {
-      for (const key in source) {
-        if (isObject(source[key])) {
-          if (!target[key]) target[key] = {}
-          mergeObjects(target[key], source[key])
-        } 
-        else if (isArray(source[key]) && isArray(target[key])) {
-          target[key] = target[key].concat(source[key]) 
-        }
-        else {
-          Object.assign(target, { [key]: source[key] })
-        }
-      }
-    }
-  
-    return mergeObjects(target, ...sources);
-  }
