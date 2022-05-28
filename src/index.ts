@@ -4,28 +4,31 @@ import { isArray, mergeObjects } from "./utils";
 
 const __yuptoswagger__: any = { debug: false }
 
-const { warn: warn_ } = console;
-console.warn = (...args) => __yuptoswagger__.debug ? warn_(...args) : undefined
-
 type YTSCompilerOptions = {
     debug: boolean;
 }
 
 class YTSCompiler {
     protected debug: boolean = false;
-    constructor(options?: YTSCompilerOptions) {
-        const keys: string[] = Object.keys(options || {});
+    protected defaultOptions: any = { debug: false }
+
+    constructor(options_: YTSCompilerOptions) {
+        const options = options_ || this.defaultOptions
+        const keys: string[] = Object.keys(options);
         for (let key of keys) {
             switch (key) {
                 case "debug":
-                    __yuptoswagger__.debug = true;
+                    __yuptoswagger__.debug = options.debug;
                     break;
                 default:
                     console.warn(`${key} is not recognized as a valid option property`)
             }
         }
     }
-
+    warn = (...args: any[]) => __yuptoswagger__.debug ? console.warn(...args) : undefined
+    log = (...args: any[]) => __yuptoswagger__.debug ? console.log(...args) : undefined
+    error = (...args: any[]) => __yuptoswagger__.debug ? console.error(...args) : undefined
+    
     parse_tests(type: string, tests: any[]): any {
         const map: any = {
           "string": {
@@ -45,6 +48,7 @@ class YTSCompiler {
             "min": "minItems",
             "max": "maxItems"
           },
+          "object": { }
         }
 
         let properties: any = {};
@@ -53,7 +57,7 @@ class YTSCompiler {
             const { name, params } = test;
             const match = type_map[name]
             if (!match) {
-              console.warn(`[WARN] yuptoswagger.js: ignoring ${name}`)
+              this.warn(`[WARN] yuptoswagger.js: ignoring ${name}`)
               continue
             }
             if (isArray(match) && match.length > 2) {
@@ -155,7 +159,7 @@ class YTSCompiler {
       const yupSchema = this.isYupSchema(schema as AnySchema)
       if (yupSchema) schema_description = yupSchema.describe();
 
-      console.log(schema_description,'schema_description');
+      this.log(schema_description,'schema_description', __yuptoswagger__.debug);
 
       const { type, ...properties } = schema_description;
 
@@ -165,6 +169,7 @@ class YTSCompiler {
           // todo: oneOf case
           // todo: allow users to add manually properties that are not mapped with yup (eg. uniqueItems)
           // todo: find workaround for non-usual usage of yup ( eg. yup.array().oneOf(...).of(...) )
+          // todo: find workaround for binary/byte format of string
           case "string": swagger_schema = this.parse_string_schema(type, properties); break;
           case "number": swagger_schema = this.parse_number_schema(type, properties); break;
           case "object": swagger_schema = this.parse_object_schema(type, properties); break;
