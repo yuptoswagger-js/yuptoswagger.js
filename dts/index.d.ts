@@ -31,6 +31,12 @@ declare class YTSCompiler {
         type: string;
         items: {};
     };
+    parse_tuple_schema(type: "tuple", schema_: AnySchema): {
+        type: string;
+        items: {
+            oneOf: any[];
+        };
+    };
     parse_spec_field(spec: any): any;
     parse_fields(fields: any[]): any[];
     isYupSchema<T extends AnySchema>(object: T): T | false;

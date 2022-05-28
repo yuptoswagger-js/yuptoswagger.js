@@ -148,6 +148,18 @@ class YTSCompiler {
       
       return schema
     }
+    parse_tuple_schema(type: "tuple", schema_: AnySchema) {
+      const { types } = schema_.spec as any;
+      
+      const oneOf: any[] = [];
+
+      for (let type of types) {
+        const parsed = this.compile(type);
+        oneOf.push(parsed);
+      }
+
+      return { type: "array", items: { oneOf } }
+    }
     parse_spec_field(spec: any) {
       const parsed: any = { }
       
@@ -192,6 +204,7 @@ class YTSCompiler {
           case "number": swagger_schema = this.parse_number_schema(type, properties); break;
           case "object": swagger_schema = this.parse_object_schema(type, properties); break;
           case "array": swagger_schema = this.parse_array_schema(type, properties); break;
+          case "tuple": swagger_schema = this.parse_tuple_schema(type, schema as AnySchema); break;
           default: return { failed: true };
       }
       const from_test_properties = this.parse_tests(type, properties.tests);
