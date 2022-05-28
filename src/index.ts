@@ -2,15 +2,16 @@ import * as yup from 'yup';
 import { AnySchema, SchemaDescription } from "yup/lib/schema";
 import { isArray, mergeObjects } from "./utils";
 
-const __yuptoswagger__: any = { debug: false }
 
 type YTSCompilerOptions = {
-    debug: boolean;
+    debug?: boolean;
+    warnings?: boolean;
 }
 
 class YTSCompiler {
+    protected defaultOptions: YTSCompilerOptions = { debug: false, warnings: true }
     protected debug: boolean = false;
-    protected defaultOptions: any = { debug: false }
+    protected warnings: boolean = false;
 
     constructor(options_: YTSCompilerOptions) {
         const options = options_ || this.defaultOptions
@@ -18,16 +19,19 @@ class YTSCompiler {
         for (let key of keys) {
             switch (key) {
                 case "debug":
-                    __yuptoswagger__.debug = options.debug;
+                    this.debug = options.debug!;
+                    break;
+                case "warnings":
+                    this.warnings = options.warnings!;
                     break;
                 default:
                     console.warn(`${key} is not recognized as a valid option property`)
             }
         }
     }
-    warn = (...args: any[]) => __yuptoswagger__.debug ? console.warn(...args) : undefined
-    log = (...args: any[]) => __yuptoswagger__.debug ? console.log(...args) : undefined
-    error = (...args: any[]) => __yuptoswagger__.debug ? console.error(...args) : undefined
+    warn = (...args: any[]) => (this.debug || this.warnings) ? console.warn(...args) : undefined
+    log = (...args: any[]) => this.debug ? console.log(...args) : undefined
+    error = (...args: any[]) => this.debug ? console.error(...args) : undefined
     
     parse_tests(type: string, tests: any[]): any {
         const map: any = {
@@ -159,7 +163,7 @@ class YTSCompiler {
       const yupSchema = this.isYupSchema(schema as AnySchema)
       if (yupSchema) schema_description = yupSchema.describe();
 
-      this.log(schema_description,'schema_description', __yuptoswagger__.debug);
+      this.log(schema_description,'schema_description', this.debug);
 
       const { type, ...properties } = schema_description;
 
