@@ -4,7 +4,11 @@ declare type YTSCompilerOptions = {
 };
 declare class YTSCompiler {
     protected debug: boolean;
-    constructor(options?: YTSCompilerOptions);
+    protected defaultOptions: any;
+    constructor(options_: YTSCompilerOptions);
+    warn: (...args: any[]) => void;
+    log: (...args: any[]) => void;
+    error: (...args: any[]) => void;
     parse_tests(type: string, tests: any[]): any;
     parse_string_schema(type: string, properties: any): {
         type: string;
