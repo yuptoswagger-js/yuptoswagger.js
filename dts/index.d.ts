@@ -1,10 +1,12 @@
 import { AnySchema, SchemaDescription } from "yup/lib/schema";
 declare type YTSCompilerOptions = {
-    debug: boolean;
+    debug?: boolean;
+    warnings?: boolean;
 };
 declare class YTSCompiler {
-    protected debug: boolean;
     protected defaultOptions: any;
+    protected debug: boolean;
+    protected warnings: boolean;
     constructor(options_: YTSCompilerOptions);
     warn: (...args: any[]) => void;
     log: (...args: any[]) => void;
