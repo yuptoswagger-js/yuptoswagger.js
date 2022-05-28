@@ -1,7 +1,7 @@
 {
-  "name": "yup",
-  "version": "1.0.0-beta.4",
-  "description": "Dead simple Object schema validation",
+  "name": "revolutionSCREENTizenPlayer",
+  "version": "0.0.1",
+  "description": "The tizen player of revolutionSCREEN platform.",
   "main": "lib/index.js",
   "module": "lib/index.esm.js",
   "runkitExampleFilename": "./runkit-example.js",
@@ -22,16 +22,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jquense/yup.git"
+    "url": "git+https://github.com/revolutionscreenag/revolutionSCREENTizenPlayer.git"
   },
   "author": {
     "name": "@monasticpanic Jason Quense"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jquense/yup/issues"
+    "url": "https://github.com/revolutionscreenag/revolutionSCREENTizenPlayer/issues"
   },
-  "homepage": "https://github.com/jquense/yup",
+  "homepage": "https://github.com/revolutionscreenag/revolutionSCREENTizenPlayer",
   "release": {
     "conventionalCommits": true,
     "publishDir": "lib"
@@ -47,9 +47,7 @@
     ]
   },
   "jest": {
-    "globals": {
-      "YUP_USE_SYNC": false
-    },
+    "globals": {},
     "testEnvironment": "node",
     "setupFilesAfterEnv": [
       "./test-setup.js"
@@ -74,6 +72,7 @@
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@types/jest": "^27.5.1",
+    "@types/tizen-common-web": "^2.0.1",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
     "@typescript-eslint/parser": "^5.25.0",
     "babel-jest": "^27.5.1",
@@ -99,12 +98,6 @@
     "rollup-plugin-filesize": "^9.1.2",
     "rollup-plugin-node-resolve": "^5.2.0",
     "synchronous-promise": "^2.0.15",
-    "typescript": "^4.6.4",
-    "yup": "^0.32.11"
-  },
-  "dependencies": {
-    "property-expr": "^2.0.4",
-    "tiny-case": "^1.0.2",
-    "toposort": "^2.0.2"
+    "typescript": "^4.6.4"
   }
 }

@@ -12,6 +12,6 @@ module.exports = (api) => ({
             targets: { node: 'current' },
           },
     ],
-    ['@babel/preset-typescript', { allowDeclareFields: true }],
+    ['@babel/preset-typescript', { allowDeclareFields: true, sourceMap: false }],
   ],
 });

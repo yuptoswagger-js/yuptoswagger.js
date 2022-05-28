@@ -17,3 +17,4 @@ declare class YTSCompiler {
 }
 
 export { YTSCompiler as default };
+//# sourceMappingURL=index.d.ts.map

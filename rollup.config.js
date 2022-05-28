@@ -14,13 +14,13 @@ const base = {
       extensions: ['.js', '.ts'],
     }),
   ],
-  external: ['tiny-case', 'toposort', 'fn-name', 'property-expr'],
+  external: [],
 };
 
 module.exports = [
   {
     input: './dts/index.d.ts',
-    output: [{ file: 'lib/index.d.ts', format: 'es' }],
+    output: [{ file: 'lib/index.d.ts', format: 'es', sourcemap: true }],
     plugins: [dts()],
   },
   {
@@ -29,10 +29,18 @@ module.exports = [
       {
         file: 'lib/index.js',
         format: 'cjs',
+        sourcemap: true,
       },
       {
         file: 'lib/index.esm.js',
         format: 'es',
+        sourcemap: true,
+      },
+      {
+        file: 'lib/index.umd.js',
+        format: 'umd',
+        sourcemap: true,
+        name: 'RevolutionScreenPlayer'
       },
     ],
     plugins: [...base.plugins, filesize()],
