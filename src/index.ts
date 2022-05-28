@@ -50,7 +50,7 @@ class YTSCompiler {
           },
           "array": {
             "min": "minItems",
-            "max": "maxItems"
+            "max": "maxItems",
           },
           "object": { }
         }
@@ -60,6 +60,12 @@ class YTSCompiler {
         for (let test of tests){
             const { name, params } = test;
             const match = type_map[name]
+            if (name === "length") {
+              const [ min_key, max_key ] = [ type_map.min, type_map.max ];
+              properties[min_key] = params.length;
+              properties[max_key] = params.length;
+              continue;
+            }
             if (!match) {
               this.warn(`[WARN] yuptoswagger.js: ignoring ${name}`)
               continue
