@@ -36,10 +36,15 @@ class YTSCompiler {
               "uuid": "format",
               "matches": [ "pattern", "regex" ],
               // required: todo
+          },
+          "array": {
+            "min": "minItems",
+            "max": "maxItems"
           }
         }
 
         let properties: any = {};
+        console.log({ type })
         const type_map = map[type];
         for (let test of tests){
               const { name, params } = test;
@@ -95,6 +100,14 @@ class YTSCompiler {
       
       return parsed;
     }
+    parse_oneOf_field(fields: any[]) {
+      const parsed_fields: any[] = [];
+      for (let field of fields){
+        const parsed = this.compile(field);
+        parsed_fields.push(parsed);
+      }
+      return parsed_fields
+    }
     isYupSchema<T extends AnySchema>(object: T): T | false {
       return object.__isYupSchema__ ? object : false;
     }
@@ -111,6 +124,9 @@ class YTSCompiler {
 
       let swagger_schema: any = {}
       switch (type) {
+          // todo: ref case
+          // todo: oneOf case
+          // todo: allow users to add manually properties that are not mapped with yup (eg. uniqueItems)
           case "string": swagger_schema = this.parse_string_schema(type, properties); break;
           case "object": swagger_schema = this.parse_object_schema(type, properties); break;
           case "array": swagger_schema = this.parse_array_schema(type, properties); break;
@@ -119,6 +135,12 @@ class YTSCompiler {
       const from_test_properties = this.parse_tests(type, properties.tests);
       const spec_properties = this.parse_spec_field(properties!.spec);
       
+      if (schema_description.oneOf) {
+        const oneOf = this.parse_oneOf_field(schema_description.oneOf as any[]);
+        console.log("OKOK", oneOf)
+        mergeObjects(swagger_schema, { oneOf });
+      }
+
       return mergeObjects({}, swagger_schema, from_test_properties, spec_properties);
     }
 }

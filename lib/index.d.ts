@@ -17,6 +17,7 @@ declare class YTSCompiler {
         type: string;
     };
     parse_spec_field(spec: any): any;
+    parse_oneOf_field(fields: any[]): any[];
     isYupSchema<T extends AnySchema>(object: T): T | false;
     compile(schema: AnySchema | SchemaDescription): any;
 }

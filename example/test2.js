@@ -19,7 +19,13 @@ const schema = yup.object().shape({
 })
 
 // let value = compiler.compile(schema);
-let value = compiler.compile(yup.array().of(yup.string().min(2)))
+let value = compiler.compile(
+  yup.array()
+    .of( yup.string() )
+    .oneOf([ yup.string(), yup.number() ])
+    .min(5)
+    .max(10)
+)
 console.log(
     value,
     // schema.isValidSync(yup.object().shape({ ok: yup.string() })),
