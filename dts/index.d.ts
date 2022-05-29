@@ -12,12 +12,15 @@ declare class YTSCompiler {
     log: (...args: any[]) => void;
     error: (...args: any[]) => void;
     parse_tests(type: string, tests: any[]): any;
-    parse_string_schema(type: string, properties: any): {
-        type: string;
-        enum: any;
+    parse_string_schema(type: string): {
+        type: "string";
+        format?: undefined;
     } | {
         type: string;
-        enum?: undefined;
+        format: "date";
+    } | undefined;
+    parse_boolean_schema(type: string): {
+        type: string;
     };
     parse_number_schema(type: 'number', properties: any): {
         type: "number";
@@ -31,7 +34,10 @@ declare class YTSCompiler {
         type: string;
         items: {};
     };
-    parse_tuple_schema(schema_: AnySchema): {
+    parse_tuple_schema(properties: any): {
+        type: string;
+        items?: undefined;
+    } | {
         type: string;
         items: {
             oneOf: any[];

@@ -56,7 +56,7 @@ class YTSCompiler {
         }
 
         let properties: any = {};
-        const type_map = map[type];
+        const type_map = type === "date" ? map["string"] : map[type];
         for (let test of tests){
             const { name, params } = test;
             const match = type_map[name]
@@ -95,18 +95,17 @@ class YTSCompiler {
         }
         return properties
     }
-    parse_string_schema(type: string, properties: any) {
-        const { oneOf } = properties;
-        
-        if( oneOf && oneOf.length ) return { type, enum: oneOf };
-
-        return { type };
+    parse_string_schema(type: string) {
+      switch (type) {
+        case "string": return { type };
+        case "date": return { type: "string", format: type }
+      }
+    }
+    parse_boolean_schema(type: string) {
+      return { type };
     }
     parse_number_schema(type: 'number', properties: any) {
-      const { oneOf } = properties;
       const schema = { type } ;
-
-      if( oneOf && oneOf.length ) mergeObjects(schema, { enum: oneOf });
 
       const integer_test_found: boolean = properties.tests.some(
         (test: any) => test.name === "integer"
@@ -145,9 +144,10 @@ class YTSCompiler {
       }      
       return schema
     }
-    parse_tuple_schema(schema_: AnySchema) {
-      const { types } = schema_.spec as any;
-      
+    parse_tuple_schema(properties: any) {
+      const { types } = properties.spec;
+      if (!types) return { type: "array" }
+
       const oneOf: any[] = [];
 
       for (let type of types) {
@@ -158,11 +158,17 @@ class YTSCompiler {
       return { type: "array", items: { oneOf } }
     }
     parse_spec_field(spec: any) {
+      console.log(spec)
       const parsed: any = { }
       
-      const { nullable } = spec;
+      const { nullable, default: _default } = spec;
 
       if (nullable) parsed.nullable = nullable;
+      if (_default !== undefined) {
+        if (typeof(_default) === 'function') {
+          parsed.default = _default();
+        } else parsed.default = _default
+      };
       
       return parsed;
     }
@@ -188,7 +194,7 @@ class YTSCompiler {
       this.log(schema_description,'schema_description', this.debug);
 
       const { type, ...properties } = schema_description;
-      
+      properties.spec = schema.spec;
 
       let swagger_schema: any = {}
       switch (type) {
@@ -197,11 +203,15 @@ class YTSCompiler {
           // todo: allow users to add manually properties that are not mapped with yup (eg. uniqueItems)
           // todo: find workaround for non-usual usage of yup ( eg. yup.array().oneOf(...).of(...) )
           // todo: find workaround for binary/byte format of string
-          case "string": swagger_schema = this.parse_string_schema(type, properties); break;
+          // todo: boolean
+          case "boolean": swagger_schema = this.parse_boolean_schema(type); break;
+          case "string": 
+          case "date": 
+            swagger_schema = this.parse_string_schema(type); break;
           case "number": swagger_schema = this.parse_number_schema(type, properties); break;
           case "object": swagger_schema = this.parse_object_schema(type, properties); break;
           case "array": swagger_schema = this.parse_array_schema(type, properties); break;
-          case "tuple": swagger_schema = this.parse_tuple_schema(schema as AnySchema); break;
+          case "tuple": swagger_schema = this.parse_tuple_schema(properties); break;
           default: return { failed: true };
       }
       const from_test_properties = this.parse_tests(type, properties.tests);
