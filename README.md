@@ -7,5 +7,131 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 
-# Conversion library for transforming Yup schema objects into Swagger OAS 3.0 schema definitions.
+### Conversion library for transforming Yup schema objects into Swagger OAS 3.0 schema definitions.
 
+
+- [yup to swagger mapping](#api) (under each method, the effect of `yuptoswagger.js` is listed)
+  - [`yup`](#yup)
+    - [`reach(schema: Schema, path: string, value?: object, context?: object): Schema`](#reachschema-schema-path-string-value-object-context-object-schema)
+    - [`addMethod(schemaType: Schema, name: string, method: ()=> Schema): void`](#addmethodschematype-schema-name-string-method--schema-void)
+    - [`ref(path: string, options: { contextPrefix: string }): Ref`](#refpath-string-options--contextprefix-string--ref)
+    - [`lazy((value: any) => Schema): Lazy`](#lazyvalue-any--schema-lazy)
+    - [`ValidationError(errors: string | Array<string>, value: any, path: string)`](#validationerrorerrors-string--arraystring-value-any-path-string)
+  - [`Schema`](#schema)
+    - [`Schema.clone(): Schema`](#schemaclone-schema)
+    - [`Schema.label(label: string): Schema`](#schemalabellabel-string-schema)
+    - [`Schema.meta(metadata: object): Schema`](#schemametametadata-object-schema)
+    - [`Schema.describe(options?: ResolveOptions): SchemaDescription`](#schemadescribeoptions-resolveoptions-schemadescription)
+    - [`Schema.concat(schema: Schema): Schema`](#schemaconcatschema-schema-schema)
+    - [`Schema.validate(value: any, options?: object): Promise<InferType<Schema>, ValidationError>`](#schemavalidatevalue-any-options-object-promiseinfertypeschema-validationerror)
+    - [`Schema.validateSync(value: any, options?: object): InferType<Schema>`](#schemavalidatesyncvalue-any-options-object-infertypeschema)
+    - [`Schema.validateAt(path: string, value: any, options?: object): Promise<InferType<Schema>, ValidationError>`](#schemavalidateatpath-string-value-any-options-object-promiseinfertypeschema-validationerror)
+    - [`Schema.validateSyncAt(path: string, value: any, options?: object): InferType<Schema>`](#schemavalidatesyncatpath-string-value-any-options-object-infertypeschema)
+    - [`Schema.isValid(value: any, options?: object): Promise<boolean>`](#schemaisvalidvalue-any-options-object-promiseboolean)
+    - [`Schema.isValidSync(value: any, options?: object): boolean`](#schemaisvalidsyncvalue-any-options-object-boolean)
+    - [`Schema.cast(value: any, options = {}): InferType<Schema>`](#schemacastvalue-any-options---infertypeschema)
+    - [`Schema.isType(value: any): value is InferType<Schema>`](#schemaistypevalue-any-value-is-infertypeschema)
+    - [`Schema.strict(enabled: boolean = false): Schema`](#schemastrictenabled-boolean--false-schema)
+    - [`Schema.strip(enabled: boolean = true): Schema`](#schemastripenabled-boolean--true-schema)
+    - [`Schema.withMutation(builder: (current: Schema) => void): void`](#schemawithmutationbuilder-current-schema--void-void)
+    - [`Schema.default(value: any): Schema`](#schemadefaultvalue-any-schema)
+      - `{ type: '..', default: value, ... }`   
+    - [`Schema.getDefault(options?: object): Any`](#schemagetdefaultoptions-object-any)
+    - [`Schema.nullable(): Schema`](#schemanullable-schema)
+      - `{ type: '..', nullable: true, ... }`   
+    - [`Schema.nonNullable(): Schema`](#schemanonnullable-schema)
+      - `removes nullable field`    
+    - [`Schema.defined(): Schema`](#schemadefined-schema)
+    - [`Schema.optional(): Schema`](#schemaoptional-schema)
+      - `removes required field`
+    - [`Schema.required(message?: string | function): Schema`](#schemarequiredmessage-string--function-schema)
+      - `add's the field to 'required' array property if type is object`
+    - [`Schema.notRequired(): Schema` Alias: `optional()`](#schemanotrequired-schema-alias-optional)
+      - `effectively reverses the above operation`   
+    - [`Schema.typeError(message: string): Schema`](#schematypeerrormessage-string-schema)
+    - [`Schema.oneOf(arrayOfValues: Array<any>, message?: string | function): Schema` Alias: `equals`](#schemaoneofarrayofvalues-arrayany-message-string--function-schema-alias-equals)
+      - `{ type: '..', enum: arrayOfValues, ... }`   
+    - [`Schema.notOneOf(arrayOfValues: Array<any>, message?: string | function)`](#schemanotoneofarrayofvalues-arrayany-message-string--function)
+      - `{ type: '..', not: { enum: arrayOfValues }, ... }`   
+    - [`Schema.when(keys: string | string[], builder: object | (values: any[], schema) => Schema): Schema`](#schemawhenkeys-string--string-builder-object--values-any-schema--schema-schema)
+    - [`Schema.test(name: string, message: string | function | any, test: function): Schema`](#schematestname-string-message-string--function--any-test-function-schema)
+    - [`Schema.test(options: object): Schema`](#schematestoptions-object-schema)
+    - [`Schema.transform((currentValue: any, originalValue: any) => any): Schema`](#schematransformcurrentvalue-any-originalvalue-any--any-schema)
+  - [mixed](#mixed)
+  - [string](#string)
+    - [`string.required(message?: string | function): Schema`](#stringrequiredmessage-string--function-schema)
+      - `add's the field to 'required' array property if the string property is inside an object`
+    - [`string.length(limit: number | Ref, message?: string | function): Schema`](#stringlengthlimit-number--ref-message-string--function-schema)
+      - `{ type: '..', minLength: limit, maxLength: limit, ... }`
+    - [`string.min(limit: number | Ref, message?: string | function): Schema`](#stringminlimit-number--ref-message-string--function-schema)
+      - `{ type: '..', minLength: number, ... }`
+    - [`string.max(limit: number | Ref, message?: string | function): Schema`](#stringmaxlimit-number--ref-message-string--function-schema)
+      - `{ type: '..', maxLength: number, ... }` 
+    - [`string.matches(regex: Regex, message?: string | function): Schema`](#stringmatchesregex-regex-message-string--function-schema)
+    - `{ type: '..', matches: regex, ... }`
+    - [`string.matches(regex: Regex, options: { message: string, excludeEmptyString: bool }): Schema`](#stringmatchesregex-regex-options--message-string-excludeemptystring-bool--schema)
+      - `{ type: '..', matches: regex, ... }`
+    - [`string.email(message?: string | function): Schema`](#stringemailmessage-string--function-schema)
+      - `{ type: '..', format: 'email', ... }`
+    - [`string.url(message?: string | function): Schema`](#stringurlmessage-string--function-schema)
+      - `{ type: '..', format: 'url', ... }`
+    - [`string.uuid(message?: string | function): Schema`](#stringuuidmessage-string--function-schema)
+      - `{ type: '..', format: 'uuid', ... }`
+    - [`string.ensure(): Schema`](#stringensure-schema)
+      - `{ type: '..', default: '', ... }`
+    - [`string.trim(message?: string | function): Schema`](#stringtrimmessage-string--function-schema)
+    - [`string.lowercase(message?: string | function): Schema`](#stringlowercasemessage-string--function-schema)
+    - [`string.uppercase(message?: string | function): Schema`](#stringuppercasemessage-string--function-schema)
+  - [number](#number)
+    - [`number.min(limit: number | Ref, message?: string | function): Schema`](#numberminlimit-number--ref-message-string--function-schema)
+      - `{ type: 'number', minimum: number, ... }`
+    - [`number.max(limit: number | Ref, message?: string | function): Schema`](#numbermaxlimit-number--ref-message-string--function-schema)
+      - `{ type: 'number', maximum: number, ... }`
+    - [`number.lessThan(max: number | Ref, message?: string | function): Schema`](#numberlessthanmax-number--ref-message-string--function-schema)
+      - `{ type: 'number', maximum: (number - 1), ... }`
+    - [`number.moreThan(min: number | Ref, message?: string | function): Schema`](#numbermorethanmin-number--ref-message-string--function-schema)
+      - `{ type: 'number', minimum: (number + 1), ... }`
+    - [`number.positive(message?: string | function): Schema`](#numberpositivemessage-string--function-schema)
+      - `{ type: 'number', minimum: 1, ... }`
+    - [`number.negative(message?: string | function): Schema`](#numbernegativemessage-string--function-schema)
+      - `{ type: 'number', maximum: -1, ... }`
+    - [`number.integer(message?: string | function): Schema`](#numberintegermessage-string--function-schema)
+      - `{ type: 'integer', maximum: -1, ... }` (type is changed)
+    - [`number.truncate(): Schema`](#numbertruncate-schema)
+    - [`number.round(type: 'floor' | 'ceil' | 'trunc' | 'round' = 'round'): Schema`](#numberroundtype-floor--ceil--trunc--round--round-schema)
+  - [boolean](#boolean) (inherits from Schema)
+  - [date](#date)
+    - [`date.min(limit: Date | string | Ref, message?: string | function): Schema`](#dateminlimit-date--string--ref-message-string--function-schema)
+      - `{ type: 'string', format: 'date', minLength: Date, ... }` 
+      - eg. `{"type":"string","format":"date","minLength":"1970-01-01T00:00:00.000Z"}`
+    - [`date.max(limit: Date | string | Ref, message?: string | function): Schema`](#datemaxlimit-date--string--ref-message-string--function-schema)
+      - `{ type: 'string', format: 'date', maxLength: Date, ... }` 
+      - eg. `{"type":"string","format":"date","maxLength":"1970-01-01T00:00:00.000Z"}`
+  - [array](#array)
+    - [`array.of(type: Schema): this`](#arrayoftype-schema-this)
+      - `-> adds items property`
+    - [`array.json(): this`](#arrayjson-this)
+    - [`array.length(length: number | Ref, message?: string | function): this`](#arraylengthlength-number--ref-message-string--function-this)
+      - `{ type: 'array', minItems: number, maxItems: number }`
+    - [`array.min(limit: number | Ref, message?: string | function): this`](#arrayminlimit-number--ref-message-string--function-this)
+      - `{ type: 'array', minItems: number }`
+    - [`array.max(limit: number | Ref, message?: string | function): this`](#arraymaxlimit-number--ref-message-string--function-this)
+      - `{ type: 'array', maxItems: number }`    
+    - [`array.ensure(): this`](#arrayensure-this)
+      - `{ type: 'array', default: [] }` 
+      - if on validation/cast a single non-array value is given, it wraps it in an array and is passed to default [<a href="https://github.com/jquense/yup/blob/master/README.md#arrayensure-this">ref<a/>] 
+    - [`array.compact(rejector: (value) => boolean): Schema`](#arraycompactrejector-value--boolean-schema)
+  - [tuple](#tuple)
+    - `yup.tuple()` -> `{"type":"array","items":{"oneOf":[{"type":"string"}]}}`
+    - `yup.tuple([ yup.string(), yup.number() ])` -> `{"type":"array","items":{"oneOf":[{"type":"string"},{"type":"number"}]}}`
+  - [object](#object)
+    - [Object schema defaults](#object-schema-defaults)
+    - [`object.shape(fields: object, noSortEdges?: Array<[string, string]>): Schema`](#objectshapefields-object-nosortedges-arraystring-string-schema)
+    - [`object.json(): this`](#objectjson-this)
+    - [`object.concat(schemaB: ObjectSchema): ObjectSchema`](#objectconcatschemab-objectschema-objectschema)
+    - [`object.pick(keys: string[]): Schema`](#objectpickkeys-string-schema)
+    - [`object.omit(keys: string[]): Schema`](#objectomitkeys-string-schema)
+    - [`object.from(fromKey: string, toKey: string, alias: boolean = false): this`](#objectfromfromkey-string-tokey-string-alias-boolean--false-this)
+    - [`object.noUnknown(onlyKnownKeys: boolean = true, message?: string | function): Schema`](#objectnounknownonlyknownkeys-boolean--true-message-string--function-schema)
+    - [`object.camelCase(): Schema`](#objectcamelcase-schema)
+    - [`object.constantCase(): Schema`](#objectconstantcase-schema)
