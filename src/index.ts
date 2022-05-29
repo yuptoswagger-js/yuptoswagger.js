@@ -75,6 +75,10 @@ class YTSCompiler {
               const value_key = value_keys.find(
                 (key: string) => params[key] !== undefined ? true : false 
               )
+              switch ( value_key ) {
+                case "more": params[value_key]++; break;
+                case "less": params[value_key]--; break;
+              }
               const value = params[value_key]
               properties[key] = value
               continue
@@ -138,17 +142,10 @@ class YTSCompiler {
         const innerType: any = properties.innerType;
         const items = this.compile(innerType)
         mergeObjects(schema, { items })
-      }
-
-      const parse_oneOf: boolean = properties.oneOf && properties.oneOf.length > 0;
-      if (parse_oneOf) {
-        const oneOf = this.parse_fields(properties.oneOf as any[]);
-        mergeObjects(schema.items, { oneOf });
-      }
-      
+      }      
       return schema
     }
-    parse_tuple_schema(type: "tuple", schema_: AnySchema) {
+    parse_tuple_schema(schema_: AnySchema) {
       const { types } = schema_.spec as any;
       
       const oneOf: any[] = [];
@@ -204,7 +201,7 @@ class YTSCompiler {
           case "number": swagger_schema = this.parse_number_schema(type, properties); break;
           case "object": swagger_schema = this.parse_object_schema(type, properties); break;
           case "array": swagger_schema = this.parse_array_schema(type, properties); break;
-          case "tuple": swagger_schema = this.parse_tuple_schema(type, schema as AnySchema); break;
+          case "tuple": swagger_schema = this.parse_tuple_schema(schema as AnySchema); break;
           default: return { failed: true };
       }
       const from_test_properties = this.parse_tests(type, properties.tests);
@@ -215,23 +212,15 @@ class YTSCompiler {
         mergeObjects(swagger_schema, spec_properties);
       }
 
-      const parse_oneOf: boolean = properties.hasOwnProperty("oneOf");
+      const parse_oneOf: boolean = properties.hasOwnProperty("oneOf") && (properties as any).oneOf.length > 0;
       if (parse_oneOf) {
-        const oneOf = this.parse_fields((properties as Exclude<SchemaDescription, "type">).oneOf as any[]);
-        mergeObjects(swagger_schema.items, { oneOf });
+        const oneOf = (properties as Exclude<SchemaDescription, "type">).oneOf // this.parse_fields((properties as Exclude<SchemaDescription, "type">).oneOf as any[]);
+        mergeObjects(swagger_schema, { enum: oneOf });
       }
       const parse_not: boolean = properties.hasOwnProperty("notOneOf") && (properties as any).notOneOf.length > 0;
-      if (parse_not) {
+      if (parse_not) { // todo: type check for values to conform schema type
         const { notOneOf } = (properties as Exclude<SchemaDescription, "type">)
-        const value = notOneOf[0] as any;
-        if (this.isYupSchema<AnySchema>(value)) {
-          const not = this.compile(value);
-          mergeObjects(swagger_schema, { not });
-  
-        } else {
-          mergeObjects(swagger_schema, { not: value });
-        }
-        if (notOneOf.length > 1) this.warn("[WARN] only the first item of the not function is parsed")
+        mergeObjects(swagger_schema, { not: { enum: notOneOf } });
       }
 
       return mergeObjects(swagger_schema, from_test_properties);

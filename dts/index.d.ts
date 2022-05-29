@@ -31,7 +31,7 @@ declare class YTSCompiler {
         type: string;
         items: {};
     };
-    parse_tuple_schema(type: "tuple", schema_: AnySchema): {
+    parse_tuple_schema(schema_: AnySchema): {
         type: string;
         items: {
             oneOf: any[];
